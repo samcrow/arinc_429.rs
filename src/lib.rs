@@ -1,6 +1,10 @@
 //!
 //! Common types for ARINC 429 communication
 //!
+//! # Serialization/Deserialization
+//!
+//! When compiled with the `serde` feature, all types support serialization and deserialization.
+//!
 
 #![doc(html_root_url = "https://docs.rs/arinc_429/0.1.0")]
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -29,10 +33,6 @@ extern crate serde;
 /// `Message::bits_label_swapped()` implement this conversion.
 ///
 /// Conversions never panic.
-///
-/// # Serialization/Deserialization
-///
-///
 ///
 /// # Examples
 ///
