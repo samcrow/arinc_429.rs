@@ -6,8 +6,8 @@
 //! When compiled with the `serde` feature, all types support serialization and deserialization.
 //!
 
-#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.0")]
-#![cfg_attr(not(feature = "std"), no_std)]
+#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.1")]
+#![no_std]
 
 #[cfg(feature = "serde")]
 #[macro_use]
@@ -104,12 +104,7 @@ impl From<Message> for u32 {
 mod msg_fmt {
     use super::Message;
 
-    #[cfg(feature = "std")]
-    use std as fmt_base;
-    #[cfg(not(feature = "std"))]
-    use core as fmt_base;
-
-    use self::fmt_base::fmt::{Debug, Formatter, Result};
+    use core::fmt::{Debug, Formatter, Result};
 
     impl Debug for Message {
         fn fmt(&self, f: &mut Formatter) -> Result {

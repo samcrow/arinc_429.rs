@@ -8,9 +8,7 @@ This crate provides common types for ARINC 429 communication.
 
 ## Usage without `std`
 
-This crate can be used without `libstd`. It has an `std` feature
-that is enabled by default. To remove the dependency on `libstd`,
-disable the default features of the dependency.
+This crate does not depend on `libstd`. `no_std` packages can use it.
 
 ## License
 

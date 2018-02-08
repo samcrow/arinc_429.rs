@@ -1,6 +1,6 @@
 [package]
 name = "arinc_429"
-version = "0.1.0"
+version = "0.1.1"
 
 
 authors = ["Sam Crow <scrow@eng.ucsd.edu>"]
@@ -20,5 +20,4 @@ serde = { version = "^1.0.0", optional = true, features = ["derive"] }
 serde_test = "^1.0.0"
 
 [features]
-default = ["std"]
-std = []
+default = []
