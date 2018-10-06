@@ -6,12 +6,25 @@
 //! When compiled with the `serde` feature, all types support serialization and deserialization.
 //!
 
-#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.1")]
-#![no_std]
+#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.2")]
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(not(feature = "std"))]
+mod fmt_provider {
+    pub use core::fmt::*;
+}
+
+#[cfg(feature = "std")]
+mod fmt_provider {
+    pub use std::fmt::*;
+}
 
 #[cfg(feature = "serde")]
 #[macro_use]
 extern crate serde;
+
+mod parity_error;
+pub use self::parity_error::ParityError;
 
 /// An ARINC 429 message
 ///
@@ -39,7 +52,7 @@ extern crate serde;
 /// Create a message
 ///
 /// ```
-/// use arinc_429::Message;
+/// # use arinc_429::Message;
 /// let message = Message::from(0x10000056);
 /// assert_eq!(0x10000056, u32::from(message));
 /// ```
@@ -47,7 +60,7 @@ extern crate serde;
 /// Label bit swapping
 ///
 /// ```
-/// use arinc_429::Message;
+/// # use arinc_429::Message;
 /// let message = Message::from_bits_label_swapped(0x10000056);
 /// assert_eq!(0x1000006a, u32::from(message));
 /// ```
@@ -74,6 +87,59 @@ impl Message {
     pub fn from_bits_label_swapped(bits: u32) -> Self {
         let bits = Self::swap_label_bits(bits);
         Message(bits)
+    }
+
+    /// Checks the parity of this message, and returns an error if the parity is not odd
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use arinc_429::Message;
+    /// assert!(Message::from(0x0).check_parity().is_err());
+    /// assert!(Message::from(0xf03ccccc).check_parity().is_err());
+    /// assert!(Message::from(0x1).check_parity().is_ok());
+    /// assert!(Message::from(0xf13ccccc).check_parity().is_ok());
+    /// ```
+    ///
+    pub fn check_parity(&self) -> Result<(), ParityError> {
+        // Should have an odd number of ones
+        if self.0.count_ones() % 2 == 1 {
+            Ok(())
+        } else {
+            let parity = (self.0 >> 31) as u8;
+            let expected = parity ^ 1;
+            Err(ParityError::new(expected, parity))
+        }
+    }
+
+    /// Calculates the parity of this message and returns a new message with the parity bit (31) to
+    /// the correct value
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use arinc_429::Message;
+    /// // Create a message with incorrect (even) parity
+    /// let message = Message::from(0x22443300);
+    /// assert_eq!(message.update_parity().bits(), 0xa2443300);
+    /// ```
+    ///
+    /// ```
+    /// # use arinc_429::Message;
+    /// // Create a message with correct (odd) parity
+    /// let message = Message::from(0x22443301);
+    /// // Message should not change
+    /// assert_eq!(message.update_parity(), message);
+    /// ```
+    ///
+    pub fn update_parity(&self) -> Message {
+        match self.check_parity() {
+            Ok(_) => self.clone(),
+            Err(_) => {
+                // Flip parity bit
+                Message(self.0 ^ 1 << 31)
+            }
+        }
     }
 
     /// Reverses the order of the 8 least significant bits of a value.
@@ -104,7 +170,7 @@ impl From<Message> for u32 {
 mod msg_fmt {
     use super::Message;
 
-    use core::fmt::{Debug, Formatter, Result};
+    use super::fmt_provider::{Debug, Formatter, Result};
 
     impl Debug for Message {
         fn fmt(&self, f: &mut Formatter) -> Result {
