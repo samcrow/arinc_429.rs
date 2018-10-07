@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3 - 2018-10-06
+
+Added subsystem address label constants
+
 ## 0.1.2 - 2018-10-05
 
 Added parity calculation functions

@@ -6,8 +6,10 @@
 //! When compiled with the `serde` feature, all types support serialization and deserialization.
 //!
 
-#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.2")]
+#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.3")]
 #![cfg_attr(not(feature = "std"), no_std)]
+
+pub mod constants;
 
 #[cfg(not(feature = "std"))]
 mod fmt_provider {
