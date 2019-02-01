@@ -6,7 +6,7 @@
 //! When compiled with the `serde` feature, all types support serialization and deserialization.
 //!
 
-#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.4")]
+#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.5")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub mod constants;
@@ -139,6 +139,29 @@ impl Message {
         }
     }
 
+    /// Returns the label of this message. This can be used to show the label as an octal number.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use arinc_429::Message;
+    /// let message = Message::from(0x84000109);
+    /// let label = message.label();
+    /// assert_eq!(format!("{:?}", label), "Label(0o220)");
+    /// ```
+    ///
+    /// ```
+    /// # use arinc_429::Message;
+    /// let message = Message::from(0x84000180);
+    /// let label = message.label();
+    /// assert_eq!(format!("{:?}", label), "Label(0o001)");
+    /// ```
+    ///
+    pub fn label(&self) -> Label {
+        let swapped = Self::swap_label_bits(self.0);
+        Label(swapped as u8)
+    }
+
     /// Reverses the order of the 8 least significant bits of a value.
     /// Returns bits 32-9 unmodified, but with bits 1-8 reversed.
     fn swap_label_bits(bits: u32) -> u32 {
@@ -150,6 +173,10 @@ impl Message {
         (bits & 0xffffff00) | new_label
     }
 }
+
+/// A label from a message, displayed in normal bit ordering as an octal number
+// Implementation detail: The enclosed label is stored in normal bit ordering
+pub struct Label(u8);
 
 impl From<u32> for Message {
     /// Creates a message from bits as transmitted, with no modifications
@@ -165,13 +192,63 @@ impl From<Message> for u32 {
 }
 
 mod msg_fmt {
-    use super::Message;
+    use super::{Message, Label};
 
     use base::fmt::{Debug, Formatter, Result};
 
     impl Debug for Message {
         fn fmt(&self, f: &mut Formatter) -> Result {
-            write!(f, "Message({:#x})", self.0)
+            write!(f, "Message({:#010x})", self.0)
+        }
+    }
+
+    impl Debug for Label {
+        fn fmt(&self, f: &mut Formatter) -> Result {
+            write!(f, "Label({:#05o})", self.0)
+        }
+    }
+
+    #[cfg(all(test, feature = "std"))]
+    mod message_test {
+        use super::super::Message;
+
+        #[test]
+        fn test_zero() {
+            let message = Message::from(0x0);
+            check_debug(&message, "Message(0x00000000)");
+        }
+
+        #[test]
+        fn test_all_ones() {
+            let message = Message::from(0xffffffff);
+            check_debug(&message, "Message(0xffffffff)");
+        }
+
+        fn check_debug(message: &Message, expected: &str) {
+            let actual = format!("{:?}", message);
+            assert_eq!(actual, expected, "Incorrect debug representation");
+        }
+    }
+
+    #[cfg(all(test, feature = "std"))]
+    mod label_test {
+        use super::super::Label;
+
+        #[test]
+        fn test_zero() {
+            let label = Label(0x0);
+            check_debug(&label, "Label(0o000)");
+        }
+
+        #[test]
+        fn test_all_ones() {
+            let label = Label(0xff);
+            check_debug(&label, "Label(0o377)");
+        }
+
+        fn check_debug(label: &Label, expected: &str) {
+            let actual = format!("{:?}", label);
+            assert_eq!(actual, expected, "Incorrect debug representation");
         }
     }
 }

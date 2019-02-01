@@ -1,6 +1,6 @@
 [package]
 name = "arinc_429"
-version = "0.1.4"
+version = "0.1.5"
 
 
 authors = ["Sam Crow <scrow@eng.ucsd.edu>"]
