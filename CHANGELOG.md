@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4 - 2019-01-31
+
+Replaced old mentions of Msg429 with Message, simplified imports, clarified no_std situation
+
 ## 0.1.3 - 2018-10-06
 
 Added subsystem address label constants

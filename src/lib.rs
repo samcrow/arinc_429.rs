@@ -6,24 +6,19 @@
 //! When compiled with the `serde` feature, all types support serialization and deserialization.
 //!
 
-#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.3")]
+#![doc(html_root_url = "https://docs.rs/arinc_429/0.1.4")]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub mod constants;
 
-#[cfg(not(feature = "std"))]
-mod fmt_provider {
-    pub use core::fmt::*;
-}
-
-#[cfg(feature = "std")]
-mod fmt_provider {
-    pub use std::fmt::*;
-}
-
 #[cfg(feature = "serde")]
 #[macro_use]
 extern crate serde;
+
+#[cfg(feature = "std")]
+use std as base;
+#[cfg(not(feature = "std"))]
+use core as base;
 
 mod parity_error;
 pub use self::parity_error::ParityError;
@@ -85,7 +80,7 @@ impl Message {
     }
 
     /// Creates a message from a message representation with the 8 label bits
-    /// reversed. The returned Msg429 will be represented as transmitted on the wires.
+    /// reversed. The returned Message will be represented as transmitted on the wires.
     pub fn from_bits_label_swapped(bits: u32) -> Self {
         let bits = Self::swap_label_bits(bits);
         Message(bits)
@@ -172,11 +167,11 @@ impl From<Message> for u32 {
 mod msg_fmt {
     use super::Message;
 
-    use super::fmt_provider::{Debug, Formatter, Result};
+    use base::fmt::{Debug, Formatter, Result};
 
     impl Debug for Message {
         fn fmt(&self, f: &mut Formatter) -> Result {
-            write!(f, "Msg429({:#x})", self.0)
+            write!(f, "Message({:#x})", self.0)
         }
     }
 }

@@ -8,7 +8,11 @@ This crate provides common types for ARINC 429 communication.
 
 ## Usage without `std`
 
-This crate does not depend on `libstd`. `no_std` packages can use it.
+This crate has a default-enabled `std` feature wich enables:
+
+* Implementation of the `Error` trait for `ParityError`
+
+The `std` feature can be disabled.
 
 ## License
 

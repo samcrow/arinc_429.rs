@@ -1,5 +1,5 @@
 
-use super::fmt_provider as fmt;
+use crate::base::fmt;
 
 /// An error indicating that a message does not have the correct parity
 #[derive(Debug)]
